@@ -11,13 +11,19 @@ export interface ModelClassParam<T> {
 }
 
 export type StaticModelFields = "save" | "fields";
+export type Omittable = StaticModelFields;
 
 export type WithoutStaticFields<T> = Exclude<keyof T, StaticModelFields>;
-
 export type SelectFields<T> = Array<WithoutStaticFields<T>> | "*";
 
 export type WhereBuilder<T> = (
   where: (field: WithoutStaticFields<T>) => Conditions,
 ) => void;
+
+export type ObjectFrom<T> = {
+  [key in keyof T]?: T[key];
+};
+
+export type ModelFieldsInObject<T> = ObjectFrom<Omit<T, Omittable>>;
 
 export {FieldsBuilder};

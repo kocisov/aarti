@@ -1,21 +1,50 @@
 import {tableize} from "inflection";
 import {Database} from "./database";
 import {Query} from "./query";
-import {SelectFields, WhereBuilder, WithoutStaticFields} from "../interfaces";
-import {createConditionsBuilder} from "../functions/createConditionsBuilder";
+import {
+  ModelFieldsInObject,
+  SelectFields,
+  WithoutStaticFields,
+} from "../interfaces";
+import {wrapString} from "../functions/wrapString";
 
 export abstract class Model {
-  static find<T>(whereBuilder: WhereBuilder<T>, limit?: number) {
+  static find<T>(limit?: number) {
     const table = tableize(this.name);
     const conditions: Array<string> = [];
 
-    whereBuilder((field) =>
-      createConditionsBuilder<keyof T>(conditions, field),
-    );
-
     return {
+      where(fields: ModelFieldsInObject<T>) {
+        Object.keys(fields).forEach((key) => {
+          // @ts-ignore
+          conditions.push(`${key} = ${fields[key]}`);
+        });
+
+        return {
+          async execute() {
+            return await Database.query([
+              `SELECT * FROM ${table}`,
+              Query.where(conditions),
+              Query.limit(limit),
+            ]);
+          },
+          async update(fields: ModelFieldsInObject<T>) {
+            const keys = Object.keys(fields);
+
+            return await Database.query([
+              `UPDATE ${table} SET`,
+              keys
+                // @ts-ignore
+                .map((key) => `${key} = ${wrapString(fields[key])}`)
+                .join(", "),
+              Query.where(conditions),
+            ]);
+          },
+        };
+      },
       async fields(rawFields: SelectFields<T>) {
         const fields = Query.fields(rawFields);
+
         return await Database.query([
           `SELECT ${fields} FROM ${table}`,
           Query.where(conditions),
@@ -64,7 +93,16 @@ export abstract class Model {
     ]);
   }
 
-  static async updateAll() {}
+  static async updateAll<T>(fields: ModelFieldsInObject<T>) {
+    const table = tableize(this.name);
+    const keys = Object.keys(fields);
+
+    return await Database.query([
+      `UPDATE ${table} SET`,
+      // @ts-ignore
+      keys.map((key) => `${key} = ${wrapString(fields[key])}`).join(", "),
+    ]);
+  }
 
   async save() {
     const table = tableize(this.constructor.name);

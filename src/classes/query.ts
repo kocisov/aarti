@@ -6,10 +6,13 @@ export class Query {
   }
 
   static fields(fields: any) {
-    return fields.join(", ") ?? fields;
+    return Array.isArray(fields) ? fields.join(", ") : fields;
   }
 
   static where(conditions: Array<string>) {
+    if (conditions.length === 0) {
+      return "";
+    }
     return `WHERE ${conditions.join(" AND ")}`;
   }
 
