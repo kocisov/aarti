@@ -1,7 +1,7 @@
 {
   "name": "aarti",
   "description": "Almost an Active Record TypeScript Implementation ¯\\_(ツ)_/¯",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "kocisov <kocis.34@gmail.com>",
   "dependencies": {
     "inflection": "^1.12.0",
