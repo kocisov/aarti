@@ -1,4 +1,3 @@
-export * from "./interfaces";
-export * from "./model";
-export * from "./database";
-export * from "./table";
+export * from "./classes/database";
+export * from "./classes/model";
+export * from "./classes/table";
