@@ -16,7 +16,8 @@ yarn add aarti
 ## Usage
 
 ```ts
-import {Database, Model, Table, FieldsBuilder} from "aarti";
+import {Database, Model, Table} from "aarti";
+import {FieldsBuilder} from "aarti/interfaces";
 
 async function main() {
   new Database(PoolConfig); // <= pg.PoolConfig
