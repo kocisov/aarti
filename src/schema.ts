@@ -17,6 +17,9 @@ export function createTableSchemer(fields: Array<string>) {
     timestamp(name: string) {
       fields.push(`${name} TIMESTAMP DEFAULT NOW()`);
     },
+    timestamptz(name: string) {
+      fields.push(`${name} TIMESTAMPTZ DEFAULT NOW()`);
+    },
     foreign(name: string) {
       return {
         references(column: string) {
@@ -30,7 +33,7 @@ export function createTableSchemer(fields: Array<string>) {
               fields.push(
                 `CONSTRAINT ${name} FOREIGN KEY(${column}) REFERENCES ${table}(${
                   references ?? column
-                })`
+                })`,
               );
             },
           };
@@ -40,4 +43,4 @@ export function createTableSchemer(fields: Array<string>) {
   };
 }
 
-export type FieldsObject = ReturnType<typeof createTableSchemer>;
+export type FieldsBuilder = ReturnType<typeof createTableSchemer>;

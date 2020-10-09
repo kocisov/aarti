@@ -1,6 +1,6 @@
 {
-  "name": "@kocisov/active-record",
-  "description": "Active Record TypeScript Implementation ¯\\_(ツ)_/¯",
+  "name": "aarti",
+  "description": "Almost an Active Record TypeScript Implementation ¯\\_(ツ)_/¯",
   "version": "0.0.1",
   "author": "kocisov <kocis.34@gmail.com>",
   "dependencies": {
@@ -13,8 +13,15 @@
     "@types/pg": "^7.14.5",
     "typescript": "^4.0.3"
   },
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "private": false,
-  "repository": "https://github.com/Kocisov/active-record.git"
+  "repository": "https://github.com/Kocisov/aarti.git",
+  "scripts": {
+    "build": "tsc"
+  },
+  "types": "dist/index.d.ts"
 }

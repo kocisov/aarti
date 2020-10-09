@@ -1,6 +1,6 @@
 import {tableize} from "inflection";
+import {Database} from "./database";
 import {ModelClassParam} from "./interfaces";
-import {getCachedPool} from "./pool";
 import {createTableSchemer} from "./schema";
 
 export abstract class Table {
@@ -13,16 +13,14 @@ export abstract class Table {
   }
 
   static async drop(table: string) {
-    const pool = getCachedPool();
-    return await pool.query(`DROP TABLE [IF EXISTS] ${table}`);
+    return await Database.pool.query(`DROP TABLE IF EXISTS ${table}`);
   }
 
   static async create<T>(
     Model: ModelClassParam<T>,
-    queryOnly: boolean = false
+    queryOnly: boolean = false,
   ) {
     const fields: Array<string> = [];
-    const pool = getCachedPool();
 
     const model = new Model();
 
@@ -40,6 +38,6 @@ export abstract class Table {
       return query;
     }
 
-    return await pool.query(query);
+    return await Database.pool.query(query);
   }
 }

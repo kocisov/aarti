@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src",
     "target": "ES5",
     "module": "CommonJS",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
@@ -8,7 +11,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "downlevelIteration": true
-  }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }
