@@ -1,2 +1,3 @@
-# active-record
-ActiveRecord TypeScript Implementation ¯\_(ツ)_/¯
+# @kocisov/active-record
+
+> Active Record TypeScript Implementation ¯\\\_(ツ)\_/¯
