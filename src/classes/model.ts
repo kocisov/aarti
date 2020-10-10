@@ -51,6 +51,7 @@ export abstract class Model {
       Query.limit(limit),
     ]);
   }
+
   static async last<T extends Model>(
     this: ObjectType<T>,
     limit: number = 1,
@@ -78,6 +79,25 @@ export abstract class Model {
       `UPDATE ${table} SET`,
       Query.mapObjectValues(fields).join(", "),
     ]);
+  }
+
+  static where<T extends Model>(
+    this: ObjectType<T>,
+    where: ModelFieldsInObject<T>,
+    limit?: number,
+  ) {
+    const table = tableize(this.name);
+
+    return {
+      async update(fields: ModelFieldsInObject<T>) {
+        return await Database.query([
+          `UPDATE ${table} SET`,
+          Query.mapObjectValues(fields).join(", "),
+          Query.where(where),
+          Query.limit(limit),
+        ]);
+      },
+    };
   }
 
   async save() {

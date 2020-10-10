@@ -26,6 +26,6 @@ export type ObjectFrom<T> = {
 
 export type ModelFieldsInObject<T> = ObjectFrom<Omit<T, Omittable>>;
 
-export type ObjectType<T> = {new (): T} | Function;
+export type ObjectType<T> = {new (): T};
 
 export {FieldsBuilder};

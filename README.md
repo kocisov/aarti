@@ -75,6 +75,8 @@ async function main() {
     null,
     // SELECT * ([Fields: null] = *)
   );
+
+  await User.where({id: 1}).update({email: "test_updated@test.com"});
 }
 
 main();
