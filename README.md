@@ -22,15 +22,25 @@ import {FieldsBuilder} from "aarti/interfaces";
 async function main() {
   new Database(PoolConfig); // <= pg.PoolConfig
 
-  interface User {
-    id: number;
-    team_id: number;
-    email: string;
-    password: string;
-    created_at: string;
+  class Team extends Model {
+    id?: number;
+    name?: string;
+    created_at?: string;
+
+    fields(t: FieldsBuilder) {
+      t.id();
+      t.string("name", true /* UNIQUE */);
+      t.timestamptz("created_at");
+    }
   }
 
   class User extends Model {
+    id?: number;
+    team_id?: number;
+    email?: string;
+    password?: string;
+    created_at?: string;
+
     fields(t: FieldsBuilder) {
       t.id();
       t.int("team_id");
@@ -41,18 +51,30 @@ async function main() {
     }
   }
 
+  await Table.create(Team);
+  await Table.create(User);
+
   const user = new User();
   user.email = "test@test.com";
   user.password = "argon2:...";
   user.team_id = 1;
   await user.save();
 
-  const {length, data} = await User.find<User>((where) => {
-    where("id").is(1);
-    where("email").is("test@test.com");
-  }).fields(["email", "team_id", "created_at"]);
+  const userWithEmailAndId = await User.find(
+    // WHERE (Conditions)
+    {id: 1, email: "test@test.com"},
 
-  console.log("find id = 1", data);
+    // SELECT (email, team_id, created_at) (Fields)
+    "email",
+    "team_id",
+    "created_at",
+  );
+
+  const allUsers = await User.find(
+    // WHERE ([Conditions: null] = *)
+    null,
+    // SELECT * ([Fields: null] = *)
+  );
 }
 
 main();

@@ -105,3 +105,6 @@ dist
 
 # Test run
 run.ts
+
+# Old files
+src/old
