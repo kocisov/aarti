@@ -1,19 +1,37 @@
-import {WithoutStaticFields} from "../interfaces";
+import {Model} from "./model";
+import {ObjectFrom, SelectFields, WithoutStaticFields} from "../interfaces";
+import {wrapString} from "../functions/wrapString";
 
 export class Query {
   static insert(table: string, keys: string, values: string) {
     return `INSERT INTO ${table}(${keys}) VALUES(${values})`;
   }
 
-  static fields(fields: any) {
-    return Array.isArray(fields) ? fields.join(", ") : fields;
+  static fields<T extends Model>(fields?: SelectFields<T>) {
+    if (!fields || fields.length === 0) {
+      return "*";
+    }
+    if (Array.isArray(fields)) {
+      return fields.join(", ");
+    }
+    throw new Error("Fields should be Array/Spread or Nothing.");
   }
 
-  static where(conditions: Array<string>) {
-    if (conditions.length === 0) {
-      return "";
+  static from(table: string) {
+    return `FROM ${table}`;
+  }
+
+  static mapObjectValues<T>(objectValues: ObjectFrom<T>) {
+    return Object.keys(objectValues).map(
+      (key) => `${key} = ${wrapString((objectValues as any)[key])}`,
+    );
+  }
+
+  static where<T extends Model>(conditionsOrId: ObjectFrom<T> | number) {
+    if (typeof conditionsOrId === "number") {
+      return `WHERE id = ${conditionsOrId}`;
     }
-    return `WHERE ${conditions.join(" AND ")}`;
+    return `WHERE ${Query.mapObjectValues(conditionsOrId).join(" AND ")}`;
   }
 
   static limit(count?: number) {

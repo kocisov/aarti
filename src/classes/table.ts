@@ -2,23 +2,24 @@ import {tableize} from "inflection";
 import {Database} from "./database";
 import {ModelClassParam} from "../interfaces";
 import {createTableSchemaBuilder} from "../functions/createTableSchemaBuilder";
+import {Model} from "./model";
 
 export abstract class Table {
   private static template(name: string, fields: string) {
-    return `CREATE TABLE IF NOT EXISTS "${name}"(\n${fields}\n);`;
+    return `CREATE TABLE IF NOT EXISTS ${name}(\n${fields}\n);`;
   }
 
   private static addTab(value: string) {
     return `  ${value}`;
   }
 
-  static async drop<T>(model: string | ModelClassParam<T>) {
+  static async drop<T extends Model>(model: string | ModelClassParam<T>) {
     const table = typeof model === "string" ? model : tableize(model.name);
 
     return await Database.pool.query(`DROP TABLE IF EXISTS ${table}`);
   }
 
-  static async create<T>(
+  static async create<T extends Model>(
     Model: ModelClassParam<T>,
     queryOnly: boolean = false,
   ) {

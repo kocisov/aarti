@@ -1,106 +1,82 @@
 import {tableize} from "inflection";
-import {Database} from "./database";
-import {Query} from "./query";
+import {Database} from "../classes/database";
+import {Query} from "../classes/query";
+import {wrapString} from "../functions/wrapString";
+import {isObjectEmpty} from "../functions/isObjectEmpty";
 import {
   ModelFieldsInObject,
-  SelectFields,
+  ObjectFrom,
+  ObjectType,
+  SelectFieldsArray,
   WithoutStaticFields,
 } from "../interfaces";
-import {wrapString} from "../functions/wrapString";
 
 export abstract class Model {
-  static find<T>(limit?: number) {
+  static find<T extends Model>(
+    this: ObjectType<T>,
+    whereFieldsOrId: ObjectFrom<T> | number | null | undefined,
+    ...selectFields: SelectFieldsArray<T>
+  ) {
+    if (
+      whereFieldsOrId &&
+      typeof whereFieldsOrId !== "number" &&
+      isObjectEmpty(whereFieldsOrId)
+    ) {
+      throw new Error("Conditions/id missing in find(...)!");
+    }
+
     const table = tableize(this.name);
-    const conditions: Array<string> = [];
 
-    return {
-      where(fields: ModelFieldsInObject<T>) {
-        Object.keys(fields).forEach((key) => {
-          // @ts-ignore
-          conditions.push(`${key} = ${fields[key]}`);
-        });
-
-        return {
-          async execute() {
-            return await Database.query([
-              `SELECT * FROM ${table}`,
-              Query.where(conditions),
-              Query.limit(limit),
-            ]);
-          },
-          async update(fields: ModelFieldsInObject<T>) {
-            const keys = Object.keys(fields);
-
-            return await Database.query([
-              `UPDATE ${table} SET`,
-              keys
-                // @ts-ignore
-                .map((key) => `${key} = ${wrapString(fields[key])}`)
-                .join(", "),
-              Query.where(conditions),
-            ]);
-          },
-        };
-      },
-      async fields(rawFields: SelectFields<T>) {
-        const fields = Query.fields(rawFields);
-
-        return await Database.query([
-          `SELECT ${fields} FROM ${table}`,
-          Query.where(conditions),
-          Query.limit(limit),
-        ]);
-      },
-    };
+    return Database.query([
+      `SELECT`,
+      Query.fields(selectFields),
+      Query.from(table),
+      whereFieldsOrId ? Query.where<T>(whereFieldsOrId) : "",
+    ]);
   }
 
-  static async all<T>(rawFields: SelectFields<T>) {
-    const table = tableize(this.name);
-    const fields = Query.fields(rawFields);
-
-    return await Database.query(`SELECT ${fields} FROM ${table}`);
-  }
-
-  static async first<T>(
-    count: number,
-    rawFields: SelectFields<T>,
-    orderBy?: WithoutStaticFields<T>,
+  static async first<T extends Model>(
+    this: ObjectType<T>,
+    limit: number = 1,
+    orderBy: WithoutStaticFields<T>,
+    ...fields: SelectFieldsArray<T>
   ) {
     const table = tableize(this.name);
-    const fields = Query.fields(rawFields);
-
     return await Database.query([
-      `SELECT ${fields} FROM ${table}`,
-      Query.orderBy<T>(table, orderBy),
+      `SELECT`,
+      Query.fields(fields),
+      Query.from(table),
+      Query.orderBy(table, orderBy),
       `ASC`,
-      Query.limit(count),
+      Query.limit(limit),
     ]);
   }
-
-  static async last<T>(
-    count: number,
-    rawFields: SelectFields<T>,
-    orderBy?: WithoutStaticFields<T>,
+  static async last<T extends Model>(
+    this: ObjectType<T>,
+    limit: number = 1,
+    orderBy: WithoutStaticFields<T>,
+    ...fields: SelectFieldsArray<T>
   ) {
     const table = tableize(this.name);
-    const fields = Query.fields(rawFields);
-
     return await Database.query([
-      `SELECT ${fields} FROM ${table}`,
-      Query.orderBy<T>(table, orderBy),
+      `SELECT`,
+      Query.fields(fields),
+      Query.from(table),
+      Query.orderBy(table, orderBy),
       `DESC`,
-      Query.limit(count),
+      Query.limit(limit),
     ]);
   }
 
-  static async updateAll<T>(fields: ModelFieldsInObject<T>) {
+  static async updateAll<T extends Model>(
+    this: ObjectType<T>,
+    fields: ModelFieldsInObject<T>,
+  ) {
     const table = tableize(this.name);
-    const keys = Object.keys(fields);
 
     return await Database.query([
       `UPDATE ${table} SET`,
-      // @ts-ignore
-      keys.map((key) => `${key} = ${wrapString(fields[key])}`).join(", "),
+      Query.mapObjectValues(fields).join(", "),
     ]);
   }
 
@@ -111,7 +87,7 @@ export abstract class Model {
 
     for (const key of Object.keys(this)) {
       const rawValue = Reflect.get(this, key);
-      const value = typeof rawValue === "string" ? `'${rawValue}'` : rawValue;
+      const value = wrapString(rawValue);
       keys.push(key);
       values.push(value);
     }

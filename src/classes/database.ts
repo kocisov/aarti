@@ -32,7 +32,7 @@ export class Database {
     return getPool();
   }
 
-  static async query(query: string | Array<string>) {
+  static async query(query: string | Array<string>, returnQueryOnly = false) {
     // For checkout usage
     // const client = await Database.pool.connect();
     // const result = await client.query(query);
@@ -40,7 +40,11 @@ export class Database {
     // return result;
 
     if (Array.isArray(query)) {
-      query = query.join(" ");
+      query = query.join(" ").trimEnd();
+    }
+
+    if (returnQueryOnly) {
+      return query;
     }
 
     const {rowCount, rows} = await Database.pool.query(query);

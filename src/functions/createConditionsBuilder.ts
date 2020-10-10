@@ -1,19 +1,15 @@
+import {wrapString} from "./wrapString";
+
 export function createConditionsBuilder<T>(
   conditions: Array<string>,
   field: T,
 ) {
   return {
     is(value: string | number) {
-      if (typeof value === "string") {
-        value = `'${value}'`;
-      }
-      conditions.push(`${field} = ${value}`);
+      conditions.push(`${field} = ${wrapString(value)}`);
     },
     isNot(value: string | number) {
-      if (typeof value === "string") {
-        value = `'${value}'`;
-      }
-      conditions.push(`${field} != ${value}`);
+      conditions.push(`${field} != ${wrapString(value)}`);
     },
     isLessThan(value: number) {
       conditions.push(`${field} < ${value}`);
